@@ -3,4 +3,9 @@
     <string name="io_error">Connection error. Please try again.</string>
     <string name="unexpected_error">Unexpected error. Please try again.</string>
     <string name="get_stats_button">Get Stats!</string>
+    <string name="stats_table">Stats</string>
+    <string name="temperature">Temperature: %1$.2f°C</string>
+    <string name="humidity">Humidity: %1$.2f%%</string>
+    <string name="air_quality_percentage">Air Quality: %1$.2f%%</string>
+    <string name="methane_percentage">Methane: %1$.2f%%</string>
 </resources>
