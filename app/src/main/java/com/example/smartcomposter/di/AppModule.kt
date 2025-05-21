@@ -22,18 +22,12 @@ val appModule=module{
         HttpClient(CIO) {
             install(ContentNegotiation) {
                 json(Json {
-                    ignoreUnknownKeys=true
+                    ignoreUnknownKeys = true
                     prettyPrint = true
                     isLenient = true
                 })
             }
-           install(HttpTimeout){
-               requestTimeoutMillis = 60000 // e.g., 30 seconds for the whole request
-               connectTimeoutMillis = 5000  // e.g., 5 seconds to connect
-                socketTimeoutMillis = 30000  // e.g., 30 seconds for data transfer
-            }
         }
-
     }
 
     single{ ComposterApi(get(),get())}

@@ -1,8 +1,6 @@
 package com.example.smartcomposter.ui.screens
-import android.content.ContentValues.TAG
-import android.util.Log // <-- ADD THIS IMPORT
 
-import android.media.Image
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,11 +8,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,7 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
+
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -37,59 +38,75 @@ import com.example.smartcomposter.data.model.plantNeeds
 import org.koin.androidx.compose.koinViewModel
 
 
-private const val TAG = "ComposterAppDebug"
 
 @Composable
 fun ComposterScreen(
-    viewModel: SmartComposterViewModel= koinViewModel()
+    viewModel: SmartComposterViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            GetStatsButton(
+                viewModel,
+                modifier = Modifier
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         when {
             uiState.isLoading -> {
-                CircularProgressIndicator()
+                Column(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+
             }
 
             uiState.error != null -> {
-                Log.d(TAG,"Error Screen!")
                 ErrorScreen(
                     viewModel,
                     uiState,
-                    modifier = Modifier
+                    modifier = Modifier.weight(1f)
                 )
             }
 
             uiState.composter != null -> {
-                Log.d(TAG,"Stats Screen!")
-
-                StatsScreen(viewModel, uiState, modifier = Modifier)
+                StatsScreen(viewModel, uiState, modifier = Modifier.weight(1f))
             }
 
             else -> {
-                Log.d(TAG,"default Screen!")
+                Column(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painterResource(R.drawable.compostimage),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxHeight(0.6f)
+                            .fillMaxWidth(0.8f)
 
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        GetStatsButton(
-                            viewModel,
-                            modifier = Modifier
-                        )
-                    }
-                    Image(painterResource(R.drawable.compostimage), contentDescription = null)
+                    )
                 }
             }
         }
     }
-
 }
 
 @Composable
@@ -108,27 +125,29 @@ fun StatsScreen(
     uiState: SmartComposterUiState,
     modifier: Modifier
 ) {
-    Column {
+    Column(modifier = modifier) {
+
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            GetStatsButton(
-                viewModel,
-                modifier = Modifier
-            )
-        }
-        Row(
-            modifier=Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
+            verticalAlignment = Alignment.CenterVertically
         ){
-            StatsTable(uiState,modifier)
+            StatsTable(uiState, Modifier.weight(0.6f))
+
+            Spacer(modifier = Modifier.width(16.dp))
+
             Image(
                 painterResource(R.drawable.compostimage),
-                contentDescription=null
-                )
+                contentDescription = null,
+                modifier = Modifier
+                    .weight(0.4f)
+                    .fillMaxHeight()
+            )
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         PlantCompostLazyRow()
     }
 }
@@ -143,18 +162,19 @@ fun StatsTable(
     ){
         Column(
             modifier=Modifier
-                .fillMaxWidth()
                 .padding(16.dp),
             horizontalAlignment = Alignment.Start
         ){
             Text(
                 stringResource(R.string.stats_table),
-                fontSize = 24.sp
-                )
-            Text(stringResource(R.string.temperature,uiState.composter!!.temperature))
-            Text(stringResource(R.string.humidity,uiState.composter!!.humidity))
-            Text(stringResource(R.string.air_quality_percentage,uiState.composter!!.airQualityPercentage))
-            Text(stringResource(R.string.methane_percentage,uiState.composter!!.methanePercentage))
+                fontSize = 24.sp,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            Text(stringResource(R.string.temperature, uiState.composter!!.temperature))
+            Text(stringResource(R.string.humidity, uiState.composter!!.humidity))
+            Text(stringResource(R.string.air_quality_percentage, uiState.composter!!.airQualityPercentage))
+            Text(stringResource(R.string.methane_percentage, uiState.composter!!.methanePercentage))
         }
     }
 }
@@ -200,15 +220,15 @@ fun ErrorScreen(
     uiState: SmartComposterUiState,
     modifier: Modifier
 ){
-    Column{
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            GetStatsButton(
-                viewModel,
-                modifier = Modifier
+    Column(modifier = modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        if (uiState.error != null) {
+            Text(
+                text = "Error: ${uiState.error}",
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 16.dp)
             )
+        } else {
+            Text("An unknown error occurred.", modifier = Modifier.padding(top = 16.dp))
         }
     }
 }
